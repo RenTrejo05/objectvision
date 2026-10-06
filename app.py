@@ -29,12 +29,12 @@ def _roboflow_url():
     return os.getenv("ROBOFLOW_API_URL", "").strip() or "https://serverless.roboflow.com"
 
 
-def detectar_con_roboflow(image_file):
+def detect_with_roboflow(image_file):
     api_key = os.getenv("ROBOFLOW_API_KEY", "").strip()
     model_id = os.getenv("ROBOFLOW_MODEL_ID", "").strip()
     if not api_key or not model_id:
         raise MissingRoboflowConfig(
-            "Falta configurar ROBOFLOW_API_KEY o ROBOFLOW_MODEL_ID en el archivo .env."
+            "Configure ROBOFLOW_API_KEY and ROBOFLOW_MODEL_ID in the .env file."
         )
 
     # The SDK accepts a local image path, so use and then remove a temporary file.
@@ -53,18 +53,18 @@ def detectar_con_roboflow(image_file):
         logging.exception("Roboflow inference failed")
         status_code = getattr(getattr(error, "response", None), "status_code", None)
         if status_code in (401, 403):
-            message = "Roboflow rechazó la clave. Revisa ROBOFLOW_API_KEY y el acceso al modelo."
+            message = "Roboflow rejected the API key. Check ROBOFLOW_API_KEY and access to the model."
         elif status_code == 429:
-            message = "Se alcanzó el límite de consultas de Roboflow. Inténtalo más tarde."
+            message = "The Roboflow inference limit was reached. Try again later."
         else:
-            message = "Roboflow no pudo procesar la imagen. Revisa la clave, el model ID y el formato."
+            message = "Roboflow could not process the image. Check the API key, model ID, and image format."
         raise RuntimeError(message) from error
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
 
 
-def normalizar_predicciones(data):
+def normalize_predictions(data):
     """Convert common Roboflow prediction shapes to one simple format."""
     predictions = data.get("predictions", []) if isinstance(data, dict) else []
     if isinstance(predictions, dict):
@@ -88,7 +88,7 @@ def normalizar_predicciones(data):
     return normalized
 
 
-def consultar_wikipedia(object_name):
+def search_wikipedia(object_name):
     """Search Wikipedia directly through its public MediaWiki API."""
     response = requests.get(
         "https://en.wikipedia.org/w/api.php",
@@ -130,12 +130,12 @@ def consultar_wikipedia(object_name):
 def wikipedia_error_message(error):
     status_code = getattr(error.response, "status_code", None)
     if status_code in (401, 403):
-        return "Wikipedia rechazó temporalmente la solicitud. Inténtalo más tarde."
+        return "Wikipedia temporarily rejected the request. Try again later."
     if status_code == 429:
-        return "Wikipedia limitó temporalmente las consultas. Espera un momento e inténtalo de nuevo."
+        return "Wikipedia temporarily rate-limited the request. Wait a moment and try again."
     if status_code and status_code >= 500:
-        return "Wikipedia está temporalmente fuera de servicio. Inténtalo más tarde."
-    return "No se pudo consultar Wikipedia. Inténtalo de nuevo."
+        return "Wikipedia is temporarily unavailable. Try again later."
+    return "Could not search Wikipedia. Please try again."
 
 
 @app.get("/")
@@ -147,28 +147,28 @@ def index():
 def detect():
     image_file = request.files.get("image")
     if not image_file or not image_file.filename:
-        return jsonify(success=False, error="Selecciona una imagen para continuar."), 400
+        return jsonify(success=False, error="Select an image to continue."), 400
     extension = image_file.filename.rsplit(".", 1)[-1].lower() if "." in image_file.filename else ""
     if extension not in ALLOWED_EXTENSIONS:
-        return jsonify(success=False, error="Formato inválido. Usa JPG, JPEG, PNG o WEBP."), 400
+        return jsonify(success=False, error="Unsupported format. Use JPG, JPEG, PNG, or WEBP."), 400
 
     try:
-        raw = detectar_con_roboflow(image_file)
-        predictions = normalizar_predicciones(raw)
+        raw = detect_with_roboflow(image_file)
+        predictions = normalize_predictions(raw)
         top = max(predictions, key=lambda item: float(item.get("confidence") or 0), default=None)
-        external_info = {"success": False, "message": "No se detectaron objetos para consultar."}
+        external_info = {"success": False, "message": "No objects were detected to look up."}
         if top:
             try:
-                external_info = consultar_wikipedia(top["class"])
+                external_info = search_wikipedia(top["class"])
             except requests.HTTPError as error:
                 logging.exception("Wikipedia search failed")
                 external_info = {"success": False, "message": wikipedia_error_message(error)}
             except requests.RequestException:
                 logging.exception("Wikipedia search failed")
-                external_info = {"success": False, "message": "No se pudo conectar con Wikipedia."}
+                external_info = {"success": False, "message": "Could not connect to Wikipedia."}
             except ValueError:
                 logging.exception("Wikipedia returned invalid JSON")
-                external_info = {"success": False, "message": "Wikipedia devolvió una respuesta no válida."}
+                external_info = {"success": False, "message": "Wikipedia returned an invalid response."}
         return jsonify(success=True, predictions=predictions, top_prediction=top, external_info=external_info)
     except MissingRoboflowConfig as error:
         return jsonify(success=False, error=str(error)), 503
@@ -176,16 +176,16 @@ def detect():
         return jsonify(success=False, error=str(error)), 502
     except requests.HTTPError as error:
         logging.warning("Roboflow HTTP error: %s", error)
-        return jsonify(success=False, error="Roboflow no pudo procesar la imagen. Revisa el modelo y vuelve a intentarlo."), 502
+        return jsonify(success=False, error="Roboflow could not process the image. Check the model and try again."), 502
     except requests.RequestException:
         logging.exception("Roboflow request failed")
-        return jsonify(success=False, error="No se pudo conectar con Roboflow. Inténtalo de nuevo."), 502
+        return jsonify(success=False, error="Could not connect to Roboflow. Please try again."), 502
     except (TypeError, KeyError):
         logging.exception("Unexpected Roboflow response")
-        return jsonify(success=False, error="Roboflow devolvió una respuesta no válida."), 502
+        return jsonify(success=False, error="Roboflow returned an invalid response."), 502
     except Exception:
         logging.exception("Unexpected detection error")
-        return jsonify(success=False, error="Ocurrió un error interno. Inténtalo de nuevo."), 500
+        return jsonify(success=False, error="An internal error occurred. Please try again."), 500
 
 
 @app.post("/api/detect-frame")
@@ -193,12 +193,12 @@ def detect_frame():
     """Run Roboflow only; real-time frames must not trigger Wikipedia lookups."""
     image_file = request.files.get("image")
     if not image_file or not image_file.filename:
-        return jsonify(success=False, error="No se recibió un cuadro de la cámara."), 400
+        return jsonify(success=False, error="No camera frame was received."), 400
     extension = image_file.filename.rsplit(".", 1)[-1].lower() if "." in image_file.filename else ""
     if extension not in ALLOWED_EXTENSIONS:
-        return jsonify(success=False, error="Formato de cuadro no válido."), 400
+        return jsonify(success=False, error="Unsupported frame format."), 400
     try:
-        predictions = normalizar_predicciones(detectar_con_roboflow(image_file))
+        predictions = normalize_predictions(detect_with_roboflow(image_file))
         return jsonify(success=True, predictions=predictions)
     except MissingRoboflowConfig as error:
         return jsonify(success=False, error=str(error)), 503
@@ -206,10 +206,10 @@ def detect_frame():
         return jsonify(success=False, error=str(error)), 502
     except (TypeError, KeyError, ValueError):
         logging.exception("Invalid Roboflow frame response")
-        return jsonify(success=False, error="Roboflow devolvió una respuesta no válida."), 502
+        return jsonify(success=False, error="Roboflow returned an invalid response."), 502
     except Exception:
         logging.exception("Unexpected real-time detection error")
-        return jsonify(success=False, error="No se pudo analizar el cuadro de cámara."), 500
+        return jsonify(success=False, error="Could not analyze the camera frame."), 500
 
 
 @app.post("/api/info")
@@ -217,23 +217,23 @@ def get_object_info():
     payload = request.get_json(silent=True) or {}
     object_name = payload.get("class", "")
     if not isinstance(object_name, str) or not object_name.strip() or len(object_name) > 100:
-        return jsonify(success=False, error="Indica un objeto válido para buscar."), 400
+        return jsonify(success=False, error="Enter a valid object to search for."), 400
     try:
-        return jsonify(success=True, external_info=consultar_wikipedia(object_name.strip()))
+        return jsonify(success=True, external_info=search_wikipedia(object_name.strip()))
     except requests.HTTPError as error:
         logging.exception("Wikipedia lookup failed")
         return jsonify(success=False, error=wikipedia_error_message(error)), 502
     except requests.RequestException:
         logging.exception("Wikipedia lookup failed")
-        return jsonify(success=False, error="No se pudo conectar con Wikipedia."), 502
+        return jsonify(success=False, error="Could not connect to Wikipedia."), 502
     except ValueError:
         logging.exception("Wikipedia returned invalid JSON")
-        return jsonify(success=False, error="Wikipedia devolvió una respuesta no válida."), 502
+        return jsonify(success=False, error="Wikipedia returned an invalid response."), 502
 
 
 @app.errorhandler(413)
 def too_large(_error):
-    return jsonify(success=False, error="La imagen supera el límite de 10 MB."), 413
+    return jsonify(success=False, error="Image exceeds the 10 MB limit."), 413
 
 
 if __name__ == "__main__":

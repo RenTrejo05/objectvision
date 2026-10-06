@@ -1,16 +1,16 @@
 # ObjectVision
 
-ObjectVision es una demostración sencilla de visión artificial. Envía una imagen desde el navegador a Flask, Flask solicita predicciones al modelo `coco/50` de Roboflow y, si hay un objeto detectado, busca información adicional directamente en Wikipedia. La clave de Roboflow se mantiene en el servidor.
+ObjectVision is a computer vision demo. It sends an image from the browser to Flask, which requests predictions from Roboflow's `coco/50` model and looks up information on Wikipedia for the detected object. The Roboflow API key stays on the server.
 
-## Requisitos
+## Requirements
 
-- Python 3.9 o posterior
-- Una API key y un modelo de detección configurado en Roboflow para usar detección real
-- Un navegador con cámara para tomar fotos o detectar objetos en vivo (opcional)
+- Python 3.9 or later
+- A Roboflow API key and detection model for live inference
+- A browser with a camera for taking photos or running live detection (optional)
 
-## Instalación y ejecución
+## Install and run locally
 
-En PowerShell, desde la carpeta del proyecto:
+In PowerShell, from the project folder:
 
 ```powershell
 py -m venv .venv
@@ -20,68 +20,68 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 python app.py
 ```
 
-Abre <http://127.0.0.1:5000>.
+Open <http://127.0.0.1:5000>.
 
-## Publicar en Render
+## Publish on Render
 
-ObjectVision es una aplicación Flask, así que publícala como **Web Service** (no como Static Site). Crea un repositorio vacío en GitHub, preferiblemente privado, y desde PowerShell, en la carpeta del proyecto, sube solo los archivos de la aplicación:
+ObjectVision is a Flask application, so publish it as a **Web Service** (not a Static Site). Create an empty GitHub repository, preferably private. In PowerShell, from the project folder, upload only the application files:
 
 ```powershell
 git init -b main
 git add app.py templates static tests README.md requirements.txt .gitignore .env.example
-git commit -m "Preparar ObjectVision para publicación"
-git remote add origin https://github.com/TU-USUARIO/objectvision.git
+git commit -m "Prepare ObjectVision for deployment"
+git remote add origin https://github.com/YOUR-USERNAME/objectvision.git
 git push -u origin main
 ```
 
-En Render, selecciona **New > Web Service**, conecta ese repositorio y usa estos valores:
+In Render, select **New > Web Service**, connect that repository, and use these settings:
 
 - Runtime: `Python 3`
 - Branch: `main`
 - Build Command: `pip install -r requirements.txt`
 - Start Command: `gunicorn app:app`
 
-En la pestaña **Environment** del servicio, agrega `ROBOFLOW_API_KEY` con tu clave privada, `ROBOFLOW_MODEL_ID` con `coco/50` (o el ID de tu modelo personalizado) y `ROBOFLOW_API_URL` con `https://serverless.roboflow.com`. No subas `.env` a GitHub; Render guarda estas variables en la configuración del servicio. Al terminar el deploy, Render mostrará la URL pública HTTPS `https://<nombre-del-servicio>.onrender.com`.
+Under the service's **Environment** tab, add `ROBOFLOW_API_KEY` with your private key, `ROBOFLOW_MODEL_ID` with `coco/50` (or your custom model ID), and `ROBOFLOW_API_URL` with `https://serverless.roboflow.com`. Do not upload `.env` to GitHub; Render stores these values in the service configuration. Once deployment finishes, Render will show the public HTTPS URL, such as `https://<service-name>.onrender.com`.
 
-Si eliges el plan gratuito, el servicio puede dormirse tras un periodo sin visitas y tardar un poco más en responder al primer acceso. Cualquier persona que tenga la URL podrá usar la app y generar solicitudes al modelo, sujetas a la cuota de Roboflow.
+On the free plan, the service may sleep after a period without traffic and take longer to respond to the first visit. Anyone with the URL can use the app and trigger model inference requests, subject to your Roboflow quota.
 
-## Configuración de Roboflow
+## Configure Roboflow
 
-1. El proyecto usa el modelo COCO alojado `coco/50`.
-2. En tu cuenta de Roboflow, crea/consulta una API key privada desde la configuración de la cuenta.
-3. En `.env`, configura:
+1. The project currently uses the hosted COCO model `coco/50`.
+2. Create or find a private API key in your Roboflow account settings.
+3. Set these values in `.env`:
 
 ```dotenv
-ROBOFLOW_API_KEY=tu_api_key_privada
+ROBOFLOW_API_KEY=your_private_api_key
 ROBOFLOW_MODEL_ID=coco/50
 ROBOFLOW_API_URL=https://serverless.roboflow.com
 ```
 
-La aplicación usa `inference-sdk` y envía la API key mediante el encabezado Authorization. No subas `.env` a Git.
+The app uses `inference-sdk` and sends the API key in the Authorization header. Never commit `.env` to Git.
 
-## Búsqueda de información
+## Look up information
 
-ObjectVision consulta directamente la API pública de MediaWiki para mostrar hasta tres resultados y un resumen breve de Wikipedia. No requiere cuenta, clave ni configuración de RapidAPI. Se envían solicitudes secuenciales con un encabezado User-Agent descriptivo.
+ObjectVision queries the public MediaWiki API directly to show up to three Wikipedia results and a short summary. It does not require a RapidAPI account, key, or configuration. Requests are sent sequentially with a descriptive User-Agent header.
 
-## Prueba
+## Use the app
 
-Usa imágenes propias de un perro, gato, automóvil, persona u objetos cotidianos. El modelo debe reconocer esas clases para devolver predicciones. No se descargan imágenes automáticamente.
+Try images of dogs, cats, cars, people, or other everyday objects. The model only returns predictions for classes it recognizes. Images are not downloaded automatically.
 
-También puedes pulsar **Usar cámara** y permitir el acceso cuando el navegador lo solicite. **Iniciar detección en vivo** envía a Flask un cuadro JPEG reducido aproximadamente cada 1.5 segundos; Flask consulta Roboflow y devuelve las cajas detectadas para dibujarlas sobre el video. Cada cuadro procesado cuenta como una solicitud de inferencia y depende de la latencia y cuota de Roboflow. La cámara no se procesa localmente. Wikipedia no se consulta en cada cuadro: se busca información únicamente al analizar una imagen fija o solicitarla desde un resultado. **Tomar foto** conserva el modo de captura individual. El navegador requiere un contexto seguro, como `localhost` durante el desarrollo o HTTPS al publicar la aplicación.
+You can also select **Use camera** and allow access when your browser asks. **Start live detection** sends a reduced JPEG frame to Flask about every 1.5 seconds; Flask queries Roboflow and returns bounding boxes to draw over the video. Each processed frame counts as an inference request and depends on Roboflow's latency and quota. The camera feed is not processed locally. Wikipedia is not queried for every frame; it is used only when analyzing a still image or requesting information from a result. **Take photo** keeps the single-image capture option. The browser requires a secure context, such as `localhost` during development or HTTPS after deployment.
 
-## Solución de problemas
+## Troubleshooting
 
-- Si falta la configuración de Roboflow, la página sigue cargando y la ruta devuelve un mensaje claro al detectar.
-- Un error de autenticación o modelo se informa como problema de configuración de Roboflow.
-- Si Wikipedia no está disponible temporalmente, las detecciones siguen mostrándose y la información adicional presenta un mensaje de error.
-- Se aceptan imágenes JPG, JPEG, PNG y WEBP de hasta 10 MB.
-- La cámara puede capturar una foto JPEG o activar detección en vivo con cuadros espaciados.
-- La lista se ordena por confianza y permite ocultar resultados por debajo de un umbral.
-- Cada detección permite buscar información de ese objeto en Wikipedia.
+- If Roboflow is not configured, the page still loads and detection returns a clear message.
+- Authentication or model errors are reported as Roboflow configuration issues.
+- If Wikipedia is temporarily unavailable, detections still appear and additional information shows an error message.
+- JPG, JPEG, PNG, and WEBP images up to 10 MB are supported.
+- The camera can capture a JPEG photo or run live detection on spaced frames.
+- Predictions are sorted by confidence, and the slider filters results below a confidence threshold.
+- Each detection has an option to search Wikipedia for that object.
 
-## Comprobaciones locales
+## Run local checks
 
-Con el entorno virtual activado, ejecuta las pruebas básicas con:
+With the virtual environment activated, run the basic tests:
 
 ```powershell
 python -m unittest discover -s tests

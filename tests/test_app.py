@@ -28,7 +28,7 @@ class ObjectVisionTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_webp_image_is_accepted(self):
-        with patch.object(app, "detectar_con_roboflow", return_value={"predictions": []}):
+        with patch.object(app, "detect_with_roboflow", return_value={"predictions": []}):
             response = self.client.post(
                 "/api/detect",
                 data={"image": (io.BytesIO(b"webp placeholder"), "sample.webp")},
@@ -38,7 +38,7 @@ class ObjectVisionTests(unittest.TestCase):
         self.assertEqual(response.get_json()["predictions"], [])
 
     def test_camera_jpeg_snapshot_uses_detection_route(self):
-        with patch.object(app, "detectar_con_roboflow", return_value={"predictions": []}):
+        with patch.object(app, "detect_with_roboflow", return_value={"predictions": []}):
             response = self.client.post(
                 "/api/detect",
                 data={"image": (io.BytesIO(b"camera snapshot"), "camera.jpg")},
@@ -49,8 +49,8 @@ class ObjectVisionTests(unittest.TestCase):
 
     def test_live_frame_does_not_call_wikipedia(self):
         prediction = {"class": "dog", "confidence": 0.91, "x": 20, "y": 30, "width": 10, "height": 12}
-        with patch.object(app, "detectar_con_roboflow", return_value={"predictions": [prediction]}), \
-                patch.object(app, "consultar_wikipedia") as wikipedia:
+        with patch.object(app, "detect_with_roboflow", return_value={"predictions": [prediction]}), \
+                patch.object(app, "search_wikipedia") as wikipedia:
             response = self.client.post(
                 "/api/detect-frame",
                 data={"image": (io.BytesIO(b"camera frame"), "camera-frame.jpg")},
@@ -61,14 +61,14 @@ class ObjectVisionTests(unittest.TestCase):
         wikipedia.assert_not_called()
 
     def test_prediction_normalization_keeps_optional_box(self):
-        result = app.normalizar_predicciones({
+        result = app.normalize_predictions({
             "predictions": [{"class": "dog", "confidence": 0.9, "x": 12, "y": 20}]
         })
         self.assertEqual(result, [{"class": "dog", "confidence": 0.9, "x": 12, "y": 20}])
 
     def test_info_route_looks_up_selected_object(self):
         info = {"success": True, "data": {"results": [{"title": "Dog", "url": "https://example.test/dog"}]}}
-        with patch.object(app, "consultar_wikipedia", return_value=info) as lookup:
+        with patch.object(app, "search_wikipedia", return_value=info) as lookup:
             response = self.client.post("/api/info", json={"class": "dog"})
         self.assertEqual(response.status_code, 200)
         lookup.assert_called_once_with("dog")
@@ -81,7 +81,7 @@ class ObjectVisionTests(unittest.TestCase):
         summary_response.ok = True
         summary_response.json.return_value = {"extract": "A domesticated mammal."}
         with patch.object(app.requests, "get", side_effect=[search_response, summary_response]) as get:
-            result = app.consultar_wikipedia("dog")
+            result = app.search_wikipedia("dog")
         self.assertTrue(result["success"])
         self.assertEqual(result["data"]["results"][0]["url"], "https://en.wikipedia.org/wiki/Dog")
         self.assertEqual(result["data"]["summary"], "A domesticated mammal.")

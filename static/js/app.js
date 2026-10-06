@@ -40,12 +40,12 @@ function setFile(file) {
   const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
   const extension = file.name.split('.').pop().toLowerCase();
   if ((!allowedTypes.includes(file.type) && file.type !== '') || !allowedExtensions.includes(extension)) {
-    status.textContent = 'Formato inválido. Selecciona JPG, JPEG, PNG o WEBP.';
+    status.textContent = 'Unsupported format. Choose a JPG, JPEG, PNG, or WEBP image.';
     input.value = '';
     return;
   }
   if (file.size > 10 * 1024 * 1024) {
-    status.textContent = 'La imagen supera el límite de 10 MB.';
+    status.textContent = 'The image exceeds the 10 MB limit.';
     input.value = '';
     return;
   }
@@ -96,7 +96,7 @@ function stopRealtime() {
   startLiveButton.hidden = false;
   stopLiveButton.hidden = true;
   cameraOverlay.getContext('2d').clearRect(0, 0, cameraOverlay.width, cameraOverlay.height);
-  if (cameraVideo.videoWidth) liveStatus.textContent = 'Detección detenida.';
+  if (cameraVideo.videoWidth) liveStatus.textContent = 'Detection stopped.';
 }
 
 function drawLiveBoxes(items) {
@@ -143,7 +143,7 @@ async function realtimeLoop() {
     const started = Date.now();
     try {
       if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
-        liveStatus.textContent = 'Esperando imagen de la cámara…';
+        liveStatus.textContent = 'Waiting for the camera image…';
         await wait(250);
         continue;
       }
@@ -153,22 +153,22 @@ async function realtimeLoop() {
       canvas.height = Math.round(cameraVideo.videoHeight * scale);
       canvas.getContext('2d').drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.68));
-      if (!blob) throw new Error('No se pudo capturar un cuadro de la cámara.');
+      if (!blob) throw new Error('Could not capture a camera frame.');
       const body = new FormData();
       body.append('image', blob, 'camera-frame.jpg');
       const response = await fetch('/api/detect-frame', { method: 'POST', body });
       const data = await response.json();
-      if (!response.ok || !data.success) throw new Error(data.error || 'Roboflow no pudo analizar el cuadro.');
+      if (!response.ok || !data.success) throw new Error(data.error || 'Roboflow could not analyze the frame.');
       realtimePredictions = data.predictions || [];
       drawLiveBoxes(realtimePredictions);
       const summary = realtimePredictions.slice(0, 4)
         .map((item) => `${item.class} ${Math.round(Number(item.confidence || 0) * 100)}%`);
       liveStatus.textContent = summary.length
-        ? `En vivo · ${summary.join(' · ')}${realtimePredictions.length > 4 ? ` · +${realtimePredictions.length - 4}` : ''}`
-        : 'En vivo · No se detectan objetos en este cuadro.';
+        ? `Live · ${summary.join(' · ')}${realtimePredictions.length > 4 ? ` · +${realtimePredictions.length - 4}` : ''}`
+        : 'Live · No objects detected in this frame.';
     } catch (error) {
       stopRealtime();
-      liveStatus.textContent = error.message || 'Error al analizar el cuadro de cámara.';
+      liveStatus.textContent = error.message || 'Error analyzing the camera frame.';
       break;
     }
     await wait(Math.max(0, 1500 - (Date.now() - started)));
@@ -181,13 +181,13 @@ function startRealtime() {
   realtimeActive = true;
   startLiveButton.hidden = true;
   stopLiveButton.hidden = false;
-  liveStatus.textContent = 'Conectando con Roboflow…';
+  liveStatus.textContent = 'Connecting to Roboflow…';
   realtimeLoop();
 }
 
 async function openCamera() {
   if (!navigator.mediaDevices?.getUserMedia) {
-    status.textContent = 'Este navegador no permite usar la cámara aquí. Abre ObjectVision en localhost o mediante HTTPS.';
+    status.textContent = 'This browser cannot access the camera here. Open ObjectVision on localhost or over HTTPS.';
     return;
   }
   status.textContent = '';
@@ -204,20 +204,20 @@ async function openCamera() {
   } catch (error) {
     stopCamera();
     if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
-      status.textContent = 'No se concedió acceso a la cámara. Permite el uso de cámara en el navegador e inténtalo de nuevo.';
+      status.textContent = 'Camera access was denied. Allow camera access in your browser and try again.';
     } else if (error.name === 'NotFoundError' || error.name === 'OverconstrainedError') {
-      status.textContent = 'No se encontró una cámara disponible en este dispositivo.';
+      status.textContent = 'No camera was found on this device.';
     } else if (error.name === 'NotReadableError') {
-      status.textContent = 'La cámara está ocupada por otra aplicación. Ciérrala e inténtalo de nuevo.';
+      status.textContent = 'The camera is being used by another app. Close it and try again.';
     } else {
-      status.textContent = 'No se pudo iniciar la cámara. Comprueba los permisos del navegador.';
+      status.textContent = 'Could not start the camera. Check your browser permissions.';
     }
   }
 }
 
 function takePhoto() {
   if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
-    status.textContent = 'Espera a que aparezca la imagen de la cámara.';
+    status.textContent = 'Wait for the camera image to appear.';
     return;
   }
   const canvas = document.createElement('canvas');
@@ -226,7 +226,7 @@ function takePhoto() {
   canvas.getContext('2d').drawImage(cameraVideo, 0, 0);
   canvas.toBlob((blob) => {
     if (!blob) {
-      status.textContent = 'No se pudo capturar la foto. Inténtalo de nuevo.';
+      status.textContent = 'Could not capture the photo. Please try again.';
       return;
     }
     const photo = new File([blob], `objectvision-camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
@@ -309,8 +309,8 @@ function renderPredictions() {
   const list = document.getElementById('prediction-list');
   list.replaceChildren();
   const filtered = visiblePredictions();
-  document.getElementById('result-count').textContent = `${filtered.length} de ${predictions.length} objetos`;
-  if (!filtered.length) addText(list, 'li', 'No hay detecciones sobre ese nivel de confianza.');
+  document.getElementById('result-count').textContent = `${filtered.length} of ${predictions.length} objects`;
+  if (!filtered.length) addText(list, 'li', 'No detections meet this confidence threshold.');
 
   filtered.forEach((item) => {
     const row = document.createElement('li');
@@ -319,12 +319,12 @@ function renderPredictions() {
     details.className = 'prediction-details';
     addText(details, 'span', item.class, 'prediction-name');
     const confidence = Number(item.confidence);
-    addText(details, 'span', `Confianza: ${Number.isFinite(confidence) ? `${Math.round(confidence * 100)}%` : 'No disponible'}`, 'prediction-meta');
+    addText(details, 'span', `Confidence: ${Number.isFinite(confidence) ? `${Math.round(confidence * 100)}%` : 'Unavailable'}`, 'prediction-meta');
     const box = ['x', 'y', 'width', 'height'].filter((key) => Number.isFinite(Number(item[key])))
       .map((key) => `${key}: ${item[key]}`).join(' · ');
-    if (box) addText(details, 'span', `Caja: ${box}`, 'prediction-meta');
+    if (box) addText(details, 'span', `Box: ${box}`, 'prediction-meta');
     row.appendChild(details);
-    const lookup = addText(row, 'button', 'Buscar info', 'lookup-button');
+    const lookup = addText(row, 'button', 'Look up info', 'lookup-button');
     lookup.type = 'button';
     lookup.addEventListener('click', () => lookupInfo(item.class));
     list.appendChild(row);
@@ -335,9 +335,9 @@ function renderPredictions() {
 function renderInfo(external, objectName) {
   const info = document.getElementById('external-info');
   info.replaceChildren();
-  document.getElementById('info-for').textContent = objectName ? `Búsqueda: ${objectName}` : '';
+  document.getElementById('info-for').textContent = objectName ? `Search: ${objectName}` : '';
   if (!external || !external.success) {
-    addText(info, 'p', external?.message || 'No hay información adicional disponible.');
+    addText(info, 'p', external?.message || 'No additional information is available.');
     return;
   }
   const data = external.data || {};
@@ -357,12 +357,12 @@ function renderInfo(external, objectName) {
     });
     info.appendChild(links);
   } else if (!data.summary) {
-    addText(info, 'p', 'No se encontraron artículos relacionados.');
+    addText(info, 'p', 'No related articles were found.');
   }
 }
 
 async function lookupInfo(objectName) {
-  document.getElementById('info-for').textContent = `Buscando: ${objectName}…`;
+  document.getElementById('info-for').textContent = `Searching for: ${objectName}…`;
   const info = document.getElementById('external-info');
   info.replaceChildren();
   try {
@@ -372,10 +372,10 @@ async function lookupInfo(objectName) {
       body: JSON.stringify({ class: objectName }),
     });
     const data = await response.json();
-    if (!response.ok || !data.success) throw new Error(data.error || 'No se pudo buscar información.');
+    if (!response.ok || !data.success) throw new Error(data.error || 'Could not search for information.');
     renderInfo(data.external_info, objectName);
   } catch (error) {
-    renderInfo({ success: false, message: error.message || 'No se pudo consultar Wikipedia.' }, objectName);
+    renderInfo({ success: false, message: error.message || 'Could not search Wikipedia.' }, objectName);
   }
 }
 
@@ -390,7 +390,7 @@ button.addEventListener('click', async () => {
   if (!selectedFile) return;
   button.disabled = true;
   document.getElementById('spinner').hidden = false;
-  document.getElementById('button-label').textContent = 'Analizando imagen…';
+  document.getElementById('button-label').textContent = 'Analyzing image…';
   status.textContent = '';
   results.hidden = true;
   try {
@@ -398,16 +398,16 @@ button.addEventListener('click', async () => {
     body.append('image', selectedFile);
     const response = await fetch('/api/detect', { method: 'POST', body });
     const data = await response.json();
-    if (!response.ok || !data.success) throw new Error(data.error || 'No se pudo analizar la imagen.');
+    if (!response.ok || !data.success) throw new Error(data.error || 'Could not analyze the image.');
     predictions = data.predictions || [];
     renderPredictions();
     results.hidden = false;
     renderInfo(data.external_info, data.top_prediction?.class || '');
   } catch (error) {
-    status.textContent = error.message || 'Ocurrió un error. Inténtalo de nuevo.';
+    status.textContent = error.message || 'Something went wrong. Please try again.';
   } finally {
     document.getElementById('spinner').hidden = true;
-    document.getElementById('button-label').textContent = 'Detectar objetos';
+    document.getElementById('button-label').textContent = 'Detect objects';
     button.disabled = !selectedFile;
   }
 });

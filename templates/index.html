@@ -1,87 +1,87 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7fb">
-  <title>ObjectVision — detección de objetos</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='4') }}">
-  <script src="{{ url_for('static', filename='js/app.js', v='4') }}" defer></script>
+  <title>ObjectVision — Object Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='5') }}">
+  <script src="{{ url_for('static', filename='js/app.js', v='5') }}" defer></script>
 </head>
 <body>
   <main class="page-shell">
     <header class="heading">
       <div class="brand-mark" aria-hidden="true">OV</div>
-      <p class="eyebrow">Visión artificial, en simple</p>
+      <p class="eyebrow">Computer vision, made simple</p>
       <h1>ObjectVision</h1>
-      <p class="subtitle">Detecta objetos en imágenes utilizando inteligencia artificial.</p>
+      <p class="subtitle">Detect objects in images using artificial intelligence.</p>
     </header>
 
     <section class="card" aria-labelledby="upload-title">
-      <h2 id="upload-title">Analiza una imagen</h2>
+      <h2 id="upload-title">Analyze an image</h2>
       <label class="drop-zone" id="drop-zone" for="image-input">
         <span class="upload-icon" aria-hidden="true">↑</span>
-        <span class="drop-title">Elige una imagen para comenzar</span>
-        <span class="drop-hint">JPG, JPEG, PNG o WEBP · hasta 10 MB</span>
+        <span class="drop-title">Choose an image to get started</span>
+        <span class="drop-hint">JPG, JPEG, PNG, or WEBP · up to 10 MB</span>
         <input id="image-input" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
       </label>
       <div class="source-actions" id="source-actions">
-        <span>o toma una foto ahora</span>
-        <button class="secondary-button camera-open-button" id="open-camera" type="button">Usar cámara</button>
+        <span>or take a photo now</span>
+        <button class="secondary-button camera-open-button" id="open-camera" type="button">Use camera</button>
       </div>
       <div class="camera-panel" id="camera-panel" hidden>
         <div class="camera-stage" id="camera-stage">
-          <video id="camera-video" autoplay playsinline muted aria-label="Vista previa de la cámara"></video>
+          <video id="camera-video" autoplay playsinline muted aria-label="Camera preview"></video>
           <canvas id="camera-overlay" aria-hidden="true"></canvas>
         </div>
-        <p class="live-status" id="live-status" role="status" aria-live="polite">Cámara lista.</p>
+        <p class="live-status" id="live-status" role="status" aria-live="polite">Camera ready.</p>
         <div class="camera-controls">
-          <button class="primary-button" id="start-live" type="button">Iniciar detección en vivo</button>
-          <button class="secondary-button" id="stop-live" type="button" hidden>Detener detección</button>
-          <button class="primary-button" id="take-photo" type="button">Tomar foto</button>
-          <button class="secondary-button" id="close-camera" type="button">Cancelar</button>
+          <button class="primary-button" id="start-live" type="button">Start live detection</button>
+          <button class="secondary-button" id="stop-live" type="button" hidden>Stop detection</button>
+          <button class="primary-button" id="take-photo" type="button">Take photo</button>
+          <button class="secondary-button" id="close-camera" type="button">Cancel</button>
         </div>
       </div>
       <div class="preview-wrap" id="preview-wrap" hidden>
         <div class="image-stage" id="image-stage">
-          <img id="preview" alt="Vista previa de la imagen seleccionada">
+          <img id="preview" alt="Selected image preview">
           <canvas id="box-overlay" aria-hidden="true"></canvas>
         </div>
         <div class="preview-toolbar">
           <span id="image-name" class="image-name"></span>
           <div class="preview-actions">
-            <button class="secondary-button" id="change-image" type="button">Cambiar</button>
-            <button class="remove-button" id="remove-image" type="button">Quitar</button>
+            <button class="secondary-button" id="change-image" type="button">Change</button>
+            <button class="remove-button" id="remove-image" type="button">Remove</button>
           </div>
         </div>
       </div>
       <button class="primary-button" id="detect-button" type="button" disabled>
         <span class="spinner" id="spinner" hidden></span>
-        <span id="button-label">Detectar objetos</span>
+        <span id="button-label">Detect objects</span>
       </button>
       <p class="status" id="status" role="status" aria-live="polite"></p>
     </section>
 
     <section class="results" id="results" aria-live="polite" hidden>
-      <div class="section-heading"><span class="section-icon">✦</span><h2>Resultados</h2></div>
+      <div class="section-heading"><span class="section-icon">✦</span><h2>Results</h2></div>
       <div class="result-grid">
         <article class="result-card">
-          <h3>Objetos detectados</h3>
+          <h3>Detected objects</h3>
           <div class="filter-row">
-            <label for="confidence-filter">Confianza mínima <span id="confidence-label">0%</span></label>
+            <label for="confidence-filter">Minimum confidence <span id="confidence-label">0%</span></label>
             <input id="confidence-filter" type="range" min="0" max="95" value="0" step="5">
           </div>
           <p class="result-count" id="result-count"></p>
           <ol class="prediction-list" id="prediction-list"></ol>
         </article>
         <article class="result-card">
-          <h3>Información adicional</h3>
+          <h3>Additional information</h3>
           <p id="info-for" class="info-for"></p>
           <div id="external-info" class="external-info"></div>
         </article>
       </div>
     </section>
-    <footer>ObjectVision <span>·</span> Procesamiento seguro mediante Flask</footer>
+    <footer>ObjectVision <span>·</span> Secure processing with Flask</footer>
   </main>
 </body>
 </html>
