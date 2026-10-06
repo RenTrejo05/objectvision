@@ -1,0 +1,5 @@
+Flask
+requests
+python-dotenv
+inference-sdk>=1.5.0
+gunicorn
