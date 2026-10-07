@@ -123,15 +123,15 @@ function drawLiveBoxes(items) {
     const y = offsetY + (Number(item.y) - Number(item.height) / 2) * scaleY;
     const boxWidth = Number(item.width) * scaleX;
     const boxHeight = Number(item.height) * scaleY;
-    context.strokeStyle = '#4667f5';
+    context.strokeStyle = '#a193ff';
     context.lineWidth = 2;
     context.strokeRect(x, y, boxWidth, boxHeight);
     const label = `${item.class} ${Math.round(Number(item.confidence || 0) * 100)}%`;
     context.font = '600 12px sans-serif';
     const labelWidth = context.measureText(label).width + 12;
-    context.fillStyle = '#3154d8';
+    context.fillStyle = '#a193ff';
     context.fillRect(x, Math.max(0, y - 22), labelWidth, 22);
-    context.fillStyle = '#fff';
+    context.fillStyle = '#11121a';
     context.fillText(label, x + 6, Math.max(15, y - 7));
   });
 }
@@ -292,15 +292,15 @@ function drawBoxes() {
     const y = offsetY + (Number(item.y) - Number(item.height) / 2) * scaleY;
     const boxWidth = Number(item.width) * scaleX;
     const boxHeight = Number(item.height) * scaleY;
-    context.strokeStyle = '#4667f5';
+    context.strokeStyle = '#a193ff';
     context.lineWidth = 2;
     context.strokeRect(x, y, boxWidth, boxHeight);
     const label = `${item.class} ${Math.round(Number(item.confidence || 0) * 100)}%`;
     context.font = '600 12px sans-serif';
     const labelWidth = context.measureText(label).width + 12;
-    context.fillStyle = '#3154d8';
+    context.fillStyle = '#a193ff';
     context.fillRect(x, Math.max(0, y - 22), labelWidth, 22);
-    context.fillStyle = '#fff';
+    context.fillStyle = '#11121a';
     context.fillText(label, x + 6, Math.max(15, y - 7));
   });
 }

@@ -3,85 +3,150 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f7fb">
-  <title>ObjectVision — Object Detection</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='5') }}">
-  <script src="{{ url_for('static', filename='js/app.js', v='5') }}" defer></script>
+  <meta name="theme-color" content="#0b0d13">
+  <title>ObjectVision — See beyond the frame</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='7') }}">
+  <script src="{{ url_for('static', filename='js/app.js', v='7') }}" defer></script>
 </head>
 <body>
-  <main class="page-shell">
-    <header class="heading">
-      <div class="brand-mark" aria-hidden="true">OV</div>
-      <p class="eyebrow">Computer vision, made simple</p>
-      <h1>ObjectVision</h1>
-      <p class="subtitle">Detect objects in images using artificial intelligence.</p>
+  <div class="site-frame">
+    <header class="topbar">
+      <a class="wordmark" href="/" aria-label="ObjectVision home">
+        <span class="brand-symbol" aria-hidden="true"><i></i><i></i><b>O</b></span>
+        <span>OBJECT<span class="wordmark-light">VISION</span></span>
+      </a>
+      <div class="topbar-meta">
+        <span class="model-chip"><span class="chip-dot"></span> COCO / 50</span>
+        <span class="topbar-divider"></span>
+        <span class="system-label">VISION SYSTEM <span class="system-live">READY</span></span>
+      </div>
     </header>
 
-    <section class="card" aria-labelledby="upload-title">
-      <h2 id="upload-title">Analyze an image</h2>
-      <label class="drop-zone" id="drop-zone" for="image-input">
-        <span class="upload-icon" aria-hidden="true">↑</span>
-        <span class="drop-title">Choose an image to get started</span>
-        <span class="drop-hint">JPG, JPEG, PNG, or WEBP · up to 10 MB</span>
-        <input id="image-input" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
-      </label>
-      <div class="source-actions" id="source-actions">
-        <span>or take a photo now</span>
-        <button class="secondary-button camera-open-button" id="open-camera" type="button">Use camera</button>
-      </div>
-      <div class="camera-panel" id="camera-panel" hidden>
-        <div class="camera-stage" id="camera-stage">
-          <video id="camera-video" autoplay playsinline muted aria-label="Camera preview"></video>
-          <canvas id="camera-overlay" aria-hidden="true"></canvas>
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-index">01</span> OBJECT INTELLIGENCE</p>
+          <h1 id="hero-title">See beyond<br>the <em>frame.</em></h1>
+          <p class="hero-description">A new perspective on the things around you. Drop an image or open your camera to begin.</p>
         </div>
-        <p class="live-status" id="live-status" role="status" aria-live="polite">Camera ready.</p>
-        <div class="camera-controls">
-          <button class="primary-button" id="start-live" type="button">Start live detection</button>
-          <button class="secondary-button" id="stop-live" type="button" hidden>Stop detection</button>
-          <button class="primary-button" id="take-photo" type="button">Take photo</button>
-          <button class="secondary-button" id="close-camera" type="button">Cancel</button>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="focus-window">
+          <span class="focus-tag">FRAME / 01</span>
+          <span class="focus-corner corner-tl"></span><span class="focus-corner corner-tr"></span>
+          <span class="focus-corner corner-bl"></span><span class="focus-corner corner-br"></span>
+          <span class="focus-object"><i></i><b></b></span>
+          <span class="focus-scanline"></span>
+          <span class="focus-coordinates">X 04.81&nbsp;&nbsp; Y 12.06</span>
         </div>
       </div>
-      <div class="preview-wrap" id="preview-wrap" hidden>
-        <div class="image-stage" id="image-stage">
-          <img id="preview" alt="Selected image preview">
-          <canvas id="box-overlay" aria-hidden="true"></canvas>
-        </div>
-        <div class="preview-toolbar">
-          <span id="image-name" class="image-name"></span>
-          <div class="preview-actions">
-            <button class="secondary-button" id="change-image" type="button">Change</button>
-            <button class="remove-button" id="remove-image" type="button">Remove</button>
-          </div>
-        </div>
-      </div>
-      <button class="primary-button" id="detect-button" type="button" disabled>
-        <span class="spinner" id="spinner" hidden></span>
-        <span id="button-label">Detect objects</span>
-      </button>
-      <p class="status" id="status" role="status" aria-live="polite"></p>
-    </section>
+      </section>
 
-    <section class="results" id="results" aria-live="polite" hidden>
-      <div class="section-heading"><span class="section-icon">✦</span><h2>Results</h2></div>
-      <div class="result-grid">
-        <article class="result-card">
-          <h3>Detected objects</h3>
-          <div class="filter-row">
-            <label for="confidence-filter">Minimum confidence <span id="confidence-label">0%</span></label>
-            <input id="confidence-filter" type="range" min="0" max="95" value="0" step="5">
+      <section class="studio-grid" aria-label="Image analysis studio">
+        <section class="capture-card" aria-labelledby="upload-title">
+          <div class="card-topline">
+            <div><p class="section-kicker">THE INPUT</p><h2 id="upload-title">Choose your frame</h2></div>
+            <span class="step-count">01 <i>/ 02</i></span>
           </div>
-          <p class="result-count" id="result-count"></p>
-          <ol class="prediction-list" id="prediction-list"></ol>
-        </article>
-        <article class="result-card">
-          <h3>Additional information</h3>
-          <p id="info-for" class="info-for"></p>
-          <div id="external-info" class="external-info"></div>
-        </article>
-      </div>
-    </section>
-    <footer>ObjectVision <span>·</span> Secure processing with Flask</footer>
-  </main>
+
+          <label class="drop-zone" id="drop-zone" for="image-input">
+            <span class="upload-graphic" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none"><path d="M24 32V12m0 0-8 8m8-8 8 8M10 31v7a3 3 0 0 0 3 3h22a3 3 0 0 0 3-3v-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="drop-title">Drop an image here</span>
+            <span class="drop-subtitle">or <span>browse your files</span></span>
+            <span class="drop-hint">JPG, JPEG, PNG, WEBP <b>·</b> UP TO 10 MB</span>
+            <input id="image-input" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
+          </label>
+
+          <div class="source-actions" id="source-actions">
+            <span class="source-or"><span></span> OR USE A LIVE SOURCE <span></span></span>
+            <button class="camera-open-button" id="open-camera" type="button"><span class="camera-icon" aria-hidden="true">◉</span> Open camera <span class="button-arrow">↗</span></button>
+          </div>
+
+          <div class="camera-panel" id="camera-panel" hidden>
+            <div class="camera-panel-heading"><span class="camera-live-dot"></span><span>CAMERA INPUT</span><span class="camera-panel-rule"></span></div>
+            <div class="camera-stage" id="camera-stage">
+              <video id="camera-video" autoplay playsinline muted aria-label="Camera preview"></video>
+              <canvas id="camera-overlay" aria-hidden="true"></canvas>
+            </div>
+            <p class="live-status" id="live-status" role="status" aria-live="polite">Camera ready.</p>
+            <div class="camera-controls">
+              <button class="primary-button" id="start-live" type="button">Start live detection <span>↗</span></button>
+              <button class="secondary-button" id="stop-live" type="button" hidden>Stop detection</button>
+              <button class="secondary-button" id="take-photo" type="button">Take photo</button>
+              <button class="quiet-button" id="close-camera" type="button">Close camera</button>
+            </div>
+          </div>
+
+          <div class="preview-wrap" id="preview-wrap" hidden>
+            <div class="preview-label"><span>SELECTED FRAME</span><span class="preview-live-marker">READY TO SCAN</span></div>
+            <div class="image-stage" id="image-stage">
+              <img id="preview" alt="Selected image preview">
+              <canvas id="box-overlay" aria-hidden="true"></canvas>
+            </div>
+            <div class="preview-toolbar">
+              <span id="image-name" class="image-name"></span>
+              <div class="preview-actions">
+                <button class="secondary-button" id="change-image" type="button">Change</button>
+                <button class="remove-button" id="remove-image" type="button">Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="primary-button detect-button" id="detect-button" type="button" disabled>
+            <span class="spinner" id="spinner" hidden></span>
+            <span id="button-label">Analyze frame</span><span class="detect-arrow" aria-hidden="true">↗</span>
+          </button>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+          <div class="capture-footnote"><span class="footnote-lock">⌑</span> YOUR IMAGE IS PROCESSED SECURELY</div>
+        </section>
+
+        <aside class="model-card" aria-label="Model information">
+          <div class="model-card-top"><span class="section-kicker">THE ENGINE</span><span class="engine-status"><i></i> ONLINE</span></div>
+          <div class="model-visual" aria-hidden="true">
+            <div class="model-visual-top"><span>CLASS INDEX</span><span>80 / 80</span></div>
+            <div class="class-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="model-visual-bottom"><span>GENERAL OBJECTS</span><b>●</b><span>ACTIVE</span></div>
+          </div>
+          <p class="model-label">CURRENT MODEL</p>
+          <h2>COCO <span>50</span></h2>
+          <p class="model-description">A general-purpose object detector trained to recognize everyday scenes.</p>
+          <div class="model-stats">
+            <div><strong>80</strong><span>OBJECT CLASSES</span></div>
+            <div><strong>01.5<span>s</span></strong><span>LIVE INTERVAL</span></div>
+          </div>
+          <div class="model-note"><span class="note-mark">↗</span><span>Small or unfamiliar objects may need a custom-trained model.</span></div>
+          <div class="engine-footer"><span>INFERENCE ENGINE</span><span>ROBOFLOW <b>●</b></span></div>
+        </aside>
+      </section>
+
+      <section class="results" id="results" aria-live="polite" hidden>
+        <div class="results-heading">
+          <div><p class="section-kicker">THE OUTPUT</p><h2>What we found<span class="heading-period">.</span></h2></div>
+          <div class="results-signal"><span></span> ANALYSIS COMPLETE</div>
+        </div>
+        <div class="result-grid">
+          <article class="result-card detections-card">
+            <div class="result-card-heading"><h3>Detected objects</h3><span class="result-card-index">A / 02</span></div>
+            <div class="filter-row">
+              <label for="confidence-filter">Confidence threshold <span id="confidence-label">0%</span></label>
+              <input id="confidence-filter" type="range" min="0" max="95" value="0" step="5">
+            </div>
+            <p class="result-count" id="result-count"></p>
+            <ol class="prediction-list" id="prediction-list"></ol>
+          </article>
+          <article class="result-card info-card">
+            <div class="result-card-heading"><h3>Field notes</h3><span class="result-card-index">B / 02</span></div>
+            <p id="info-for" class="info-for"></p>
+            <div id="external-info" class="external-info"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><span>OBJECTVISION <i>·</i> VISUAL INTELLIGENCE</span><span>BUILT FOR THE DETAILS <b>↗</b></span></footer>
+  </div>
 </body>
 </html>
